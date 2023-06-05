@@ -34,33 +34,35 @@ blueprint:
 
 trigger:
   - platform: state
-    entity_id: !input doorbell_entity
-    from: "off"
-    to: "on"
+    entity_id: !input 'doorbell_entity'
+    from: 'off'
+    to: 'on'
   - platform: event
     event_type: mobile_app_notification_action
     event_data:
-      action: !input unlock_action_name
+      action: !input 'unlock_action_name'
 
 condition: []
 
 action:
+  - variables:
+      unlock_action: !input 'unlock_action_name'
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name }}"
+            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action }}"
         sequence:
           - service: lock.unlock
-            entity_id: !input lock_entity
+            entity_id: !input 'lock_entity'
       - conditions:
           - condition: state
-            entity_id: !input timer_entity
+            entity_id: !input 'timer_entity'
             state: 'idle'
           - condition: template
             value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
         sequence:
           - service: timer.start
-            entity_id: !input timer_entity
+            entity_id: !input 'timer_entity'
             data:
               duration: "00:00:30"
           - service: notify.notify
@@ -68,9 +70,8 @@ action:
               message: Someone is at the front door!
               title: Front Door Ringing
               data:
-                entity_id: !input camera_entity
+                entity_id: !input 'camera_entity'
                 actions:
-                  - action: !input unlock_action_name
+                  - action: unlock_action
                     title: Unlock Door
-
 mode: single
