@@ -45,18 +45,19 @@ trigger:
 condition: []
 
 action:
-  - variables:
-      unlock_action: !input 'unlock_action_name'
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action }}"
+            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name }}"
         sequence:
           - service: lock.unlock
             entity_id: !input 'lock_entity'
       - conditions:
+          - condition: state
+            entity_id: !input 'timer_entity'
+            state: 'idle'
           - condition: template
-            value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' and is_state(input.timer_entity, 'idle') }}"
+            value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
         sequence:
           - service: timer.start
             entity_id: !input 'timer_entity'
@@ -69,6 +70,6 @@ action:
               data:
                 entity_id: !input 'camera_entity'
                 actions:
-                  - action: unlock_action
+                  - action: unlock_action_name
                     title: Unlock Door
 mode: single
