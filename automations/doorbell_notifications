@@ -1,0 +1,76 @@
+blueprint:
+  name: Doorbell Ring and Unlock Action with Cooldown
+  description: Sends a notification when the doorbell is rung and handles an unlock action. It includes a cooldown to prevent spamming of notifications.
+  domain: automation
+  input:
+    doorbell_entity:
+      name: Doorbell entity
+      description: The entity that triggers when the doorbell is rung
+      selector:
+        entity:
+          domain: binary_sensor
+    unlock_action_name:
+      name: Unlock action name
+      description: The action name used to unlock the door
+      default: UNLOCK_DOOR
+    lock_entity:
+      name: Door lock entity
+      description: The entity for the lock that will be unlocked
+      selector:
+        entity:
+          domain: lock
+    camera_entity:
+      name: Camera entity
+      description: The entity of the camera to show in the notification
+      selector:
+        entity:
+          domain: camera
+    timer_entity:
+      name: Timer entity
+      description: The entity for the timer to prevent notification spam
+      selector:
+        entity:
+          domain: timer
+
+trigger:
+  - platform: state
+    entity_id: !input doorbell_entity
+    from: "off"
+    to: "on"
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: !input unlock_action_name
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name }}"
+        sequence:
+          - service: lock.unlock
+            entity_id: !input lock_entity
+      - conditions:
+          - condition: state
+            entity_id: !input timer_entity
+            state: 'idle'
+          - condition: template
+            value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
+        sequence:
+          - service: timer.start
+            entity_id: !input timer_entity
+            data:
+              duration: "00:00:30"
+          - service: notify.notify
+            data:
+              message: Someone is at the front door!
+              title: Front Door Ringing
+              data:
+                entity_id: !input camera_entity
+                actions:
+                  - action: !input unlock_action_name
+                    title: Unlock Door
+
+mode: single
