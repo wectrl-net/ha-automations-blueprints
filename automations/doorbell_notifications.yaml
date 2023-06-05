@@ -55,23 +55,26 @@ action:
           - service: lock.unlock
             entity_id: !input 'lock_entity'
       - conditions:
-          - condition: state
-            entity_id: !input 'timer_entity'
-            state: 'idle'
           - condition: template
             value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
         sequence:
-          - service: timer.start
-            entity_id: !input 'timer_entity'
-            data:
-              duration: "00:00:30"
-          - service: notify.notify
-            data:
-              message: Someone is at the front door!
-              title: Front Door Ringing
-              data:
-                entity_id: !input 'camera_entity'
-                actions:
-                  - action: unlock_action
-                    title: Unlock Door
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input 'timer_entity'
+                    state: 'idle'
+              sequence:
+                - service: timer.start
+                  entity_id: !input 'timer_entity'
+                  data:
+                    duration: "00:00:30"
+                - service: notify.notify
+                  data:
+                    message: Someone is at the front door!
+                    title: Front Door Ringing
+                    data:
+                      entity_id: !input 'camera_entity'
+                      actions:
+                        - action: unlock_action
+                          title: Unlock Door
 mode: single
