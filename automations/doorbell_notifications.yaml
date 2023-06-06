@@ -48,7 +48,7 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.platform == 'event' and state(unlock_action_name) == trigger.event.data.action }}"
+            value_template: "{{ trigger.platform == 'event' and unlock_action_name == trigger.event.data.action }}"
         sequence:
           - service: lock.unlock
             entity_id: !input lock_entity
