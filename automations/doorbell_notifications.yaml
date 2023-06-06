@@ -1,46 +1,42 @@
 blueprint:
-  name: Doorbell Ring and Unlock Action with Cooldown
-  description: Sends a notification when the doorbell is rung and handles an unlock action. It includes a cooldown to prevent spamming of notifications.
+  name: Front Door Ring Button and Unlock Action
+  description: Automation to unlock the front door when the door ring button is pressed and notification action is UNLOCK_DOOR
   domain: automation
   input:
-    doorbell_entity:
-      name: Doorbell entity
-      description: The entity that triggers when the doorbell is rung
+    binary_sensor_entity:
+      name: Binary Sensor
+      description: The binary sensor that triggers the automation
       selector:
         entity:
           domain: binary_sensor
-    unlock_action_name:
-      name: Unlock action name
-      description: The action name used to unlock the door
-      default: UNLOCK_DOOR
     lock_entity:
-      name: Door lock entity
-      description: The entity for the lock that will be unlocked
+      name: Lock
+      description: The lock to unlock when the event is triggered
       selector:
         entity:
           domain: lock
-    camera_entity:
-      name: Camera entity
-      description: The entity of the camera to show in the notification
-      selector:
-        entity:
-          domain: camera
     timer_entity:
-      name: Timer entity
-      description: The entity for the timer to prevent notification spam
+      name: Timer
+      description: The timer to start when the door ring button is pressed
       selector:
         entity:
           domain: timer
+    camera_entity:
+      name: Camera
+      description: The camera that captures the event
+      selector:
+        entity:
+          domain: camera
 
 trigger:
   - platform: state
-    entity_id: !input 'doorbell_entity'
-    from: 'off'
-    to: 'on'
+    entity_id: !input binary_sensor_entity
+    from: "off"
+    to: "on"
   - platform: event
     event_type: mobile_app_notification_action
     event_data:
-      action: !input 'unlock_action_name'
+      action: UNLOCK_DOOR
 
 condition: []
 
@@ -48,19 +44,23 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name }}"
+            value_template: >-
+              {{ trigger.platform == 'event' and trigger.event.data.action ==
+              'UNLOCK_DOOR' }}
         sequence:
           - service: lock.unlock
-            entity_id: !input 'lock_entity'
+            entity_id: !input lock_entity
       - conditions:
           - condition: state
-            entity_id: !input 'timer_entity'
-            state: 'idle'
+            entity_id: !input timer_entity
+            state: idle
           - condition: template
-            value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
+            value_template: >-
+              {{ trigger.platform == 'state' and trigger.to_state.state == 'on'
+              }}
         sequence:
           - service: timer.start
-            entity_id: !input 'timer_entity'
+            entity_id: !input timer_entity
             data:
               duration: "00:00:30"
           - service: notify.notify
@@ -68,8 +68,8 @@ action:
               message: Someone is at the front door!
               title: Front Door Ringing
               data:
-                entity_id: !input 'camera_entity'
+                entity_id: !input camera_entity
                 actions:
-                  - action: unlock_action_name
+                  - action: UNLOCK_DOOR
                     title: Unlock Door
 mode: single
