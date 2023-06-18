@@ -1,5 +1,5 @@
 blueprint:
-  name: [Blueprint] Washing Machine Cycle Monitoring
+  name: "[Blueprint] Washing Machine Cycle Monitoring"
   description: >
     This blueprint monitors a washing machine's power and energy usage and sends a notification when the washing cycle finishes.
     
