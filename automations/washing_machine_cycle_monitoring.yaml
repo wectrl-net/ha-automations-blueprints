@@ -1,0 +1,111 @@
+blueprint:
+  name: [Blueprint] Washing Machine Cycle Monitoring
+  description: >
+    This blueprint monitors a washing machine's power and energy usage and sends a notification when the washing cycle finishes.
+    
+    Before using this blueprint, ensure you have two 'input_number' helpers set up in your Home Assistant configuration. 
+
+    1. Washing Start Energy Helper: An 'input_number' helper to store the energy reading at the start of the washing cycle.
+    2. Last Washing Energy Used Helper: Another 'input_number' helper to store the energy used in the last washing cycle.
+
+    Once you have created these 'input_number' helpers, input the following into the blueprint:
+
+    1. Washing Machine Power Sensor: The power sensor entity of your washing machine.
+    2. Washing Machine Energy Sensor: The energy sensor entity of your washing machine.
+    3. Start Power Threshold: The power threshold (in Watts) indicating the start of the washing cycle. Default is 100W.
+    4. End Power Threshold: The power threshold (in Watts) indicating the end of the washing cycle. Default is 10W.
+    5. Notification Service: The service entity you wish to use for notifications.
+    6. Washing Start Energy Helper: Select the 'input_number' helper you created to store the energy at the start of the washing cycle.
+    7. Last Washing Energy Used Helper: Select the 'input_number' helper you created to store the energy used in the last washing cycle.
+
+    The automation will monitor the washing machine's power and update the 'input_number' helpers accordingly. At the end of each washing cycle, it will send a notification with the energy used in the last cycle.
+  domain: automation
+  input:
+    washing_machine_power_sensor:
+      name: Washing Machine Power Sensor
+      description: The power sensor for the washing machine.
+      selector:
+        entity:
+          domain: sensor
+    washing_machine_energy_sensor:
+      name: Washing Machine Energy Sensor
+      description: The energy sensor for the washing machine.
+      selector:
+        entity:
+          domain: sensor
+    start_power_threshold:
+      name: Start Power Threshold
+      description: The power threshold (in Watts) indicating the start of the washing cycle.
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 2000
+          step: 1
+          unit_of_measurement: 'W'
+    end_power_threshold:
+      name: End Power Threshold
+      description: The power threshold (in Watts) indicating the end of the washing cycle.
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 2000
+          step: 1
+          unit_of_measurement: 'W'
+    notification_service:
+      name: Notification Service
+      description: The service used for notifications.
+      selector:
+        entity:
+          domain: notify
+    wash_start_energy_helper:
+      name: Washing Start Energy Helper
+      description: An input_number helper to store the energy at the start of the washing cycle.
+      selector:
+        entity:
+          domain: input_number
+    wash_last_energy_used_helper:
+      name: Last Washing Energy Used Helper
+      description: An input_number helper to store the energy used in the last washing cycle.
+      selector:
+        entity:
+          domain: input_number
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input 'washing_machine_power_sensor'
+    above: !input 'start_power_threshold'
+  - platform: numeric_state
+    entity_id: !input 'washing_machine_power_sensor'
+    below: !input 'end_power_threshold'
+    for:
+      minutes: 2
+
+variables:
+  washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
+  wash_start_energy_helper: !input 'wash_start_energy_helper'
+  wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
+
+action:
+  - choose:
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input 'washing_machine_power_sensor'
+            above: !input 'start_power_threshold'
+        sequence:
+          - service: input_number.set
+            target:
+              entity_id: "{{ wash_start_energy_helper }}"
+            data:
+              value: "{{ states(washing_machine_energy_sensor) }}"
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input 'washing_machine_power_sensor'
+            below: !input 'end_power_threshold'
+        sequence:
+          - service: input_number.set
+            target:
+              entity_id: "{{ wash_last_energy_used_helper }}"
+            data:
+              value: "{{ (states(washing_machine_energy_sensor) | float -
