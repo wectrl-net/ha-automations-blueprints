@@ -165,37 +165,37 @@ action:
   - choose:
       - conditions:
           - condition: numeric_state
-            entity_id: !input 'washing_machine_power_sensor'
-            above: !input 'start_power_threshold'
+            entity_id: !input washing_machine_power_sensor
+            above: !input start_power_threshold
           - condition: state
-            entity_id: !input 'washing_machine_status'
+            entity_id: !input washing_machine_status
             state: 'off'
         sequence:
           - service: input_number.set_value
             target:
-              entity_id: !input 'wash_start_energy_helper'
+              entity_id: !input wash_start_energy_helper
             data:
               value: '{{ states(washing_machine_energy_sensor) }}'
           - service: input_boolean.turn_on
             target:
-              entity_id: !input 'washing_machine_status'
+              entity_id: !input washing_machine_status
       - conditions:
           - condition: numeric_state
-            entity_id: !input 'washing_machine_power_sensor'
-            below: !input 'end_power_threshold'
+            entity_id: !input washing_machine_power_sensor
+            below: !input end_power_threshold
           - condition: state
-            entity_id: !input 'washing_machine_status'
+            entity_id: !input washing_machine_status
             state: 'on'
         sequence:
           - service: input_number.set_value
             target:
-              entity_id: !input 'wash_last_energy_used_helper'
+              entity_id: !input wash_last_energy_used_helper
             data:
               value: '{{ (states(washing_machine_energy_sensor) | float - states(wash_start_energy_helper) | float) }}'
           - service: input_boolean.turn_off
             target:
-              entity_id: !input 'washing_machine_status'
-          - service: !input 'notification_service'
+              entity_id: !input washing_machine_status
+          - service: !input notification_service
             data:
               title: '{{ friendly_name }} Finished'
               message: >
@@ -214,19 +214,19 @@ action:
             then:
               - service: input_boolean.turn_off
                 target:
-                  entity_id: !input 'laundry_taken_out_helper'
-            else:
-              - service: !input 'notification_service'
-                data:
-                  title: 'Reminder: Laundry is done!'
-                  message: 'It has been {{ states(reminder_delay) }} minutes. Laundry should be taken out.'
-              - repeat:
-                  until: '{{ is_state(door_sensor_entity, "on") }}'
-                  sequence:
-                    - delay: '{{ reminder_delay | int }}:00:00'
-                    - condition: template
-                      value_template: '{{ is_state(door_sensor_entity, "off") and is_state(laundry_taken_out_helper, "on") }}'
-                    - service: !input 'notification_service'
-                      data:
-                        title: 'Reminder: Laundry is done!'
-                        message: 'It has been another {{ states(reminder_delay) }} minutes. Laundry should be taken out.'
+                  entity_id: !input laundry_taken_out_helper
+            # else:
+            #   - service: !input notification_service
+            #     data:
+            #       title: 'Reminder: Laundry is done!'
+            #       message: 'It has been {{ states(reminder_delay) }} minutes. Laundry should be taken out.'
+            #   - repeat:
+            #       until: '{{ is_state(door_sensor_entity, "on") }}'
+            #       sequence:
+            #         - delay: '{{ reminder_delay | int }}:00:00'
+            #         - condition: template
+            #           value_template: '{{ is_state(door_sensor_entity, "off") and is_state(laundry_taken_out_helper, "on") }}'
+            #         - service: !input 'notification_service'
+            #           data:
+            #             title: 'Reminder: Laundry is done!'
+            #             message: 'It has been another {{ states(reminder_delay) }} minutes. Laundry should be taken out.'
