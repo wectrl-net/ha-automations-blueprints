@@ -203,18 +203,18 @@ action:
                 {{ states(wash_last_energy_used_helper) | round(2) }}
                 {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") | default("unavailable") }}
                 of energy.
-      - conditions:
-          # We need to use template condition because the door sensor and laundry taken out helper are optional
-          # Check if the door if closed and the laundry taken out helper is on if so, send a reminder notification
-          - '{{ door_sensor_entity is string and door_sensor_entity is match "sensor." }}'
-          - '{{ laundry_taken_out_helper is string and laundry_taken_out_helper is match "input_boolean." }}'
-          - '{{ is_state(laundry_taken_out_helper, "on") | default("unavailable") }}'
-        sequence:
-          - if: '{{ is_state(door_sensor_entity, "open") | default("unavailable") }}'
-            then:
-              - service: input_boolean.turn_off
-                target:
-                  entity_id: !input laundry_taken_out_helper
+      # - conditions:
+      #     # We need to use template condition because the door sensor and laundry taken out helper are optional
+      #     # Check if the door if closed and the laundry taken out helper is on if so, send a reminder notification
+      #     - '{{ door_sensor_entity is string and door_sensor_entity is match "sensor." }}'
+      #     - '{{ laundry_taken_out_helper is string and laundry_taken_out_helper is match "input_boolean." }}'
+      #     - '{{ is_state(laundry_taken_out_helper, "on") | default("unavailable") }}'
+      #   sequence:
+      #     - if: '{{ is_state(door_sensor_entity, "open") | default("unavailable") }}'
+      #       then:
+      #         - service: input_boolean.turn_off
+      #           target:
+      #             entity_id: !input laundry_taken_out_helper
             # else:
             #   - service: !input notification_service
             #     data:
