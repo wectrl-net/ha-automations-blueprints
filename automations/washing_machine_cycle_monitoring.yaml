@@ -153,7 +153,7 @@ action:
               entity_id: !input 'washing_machine_status'
           - service: !input 'notification_service'
             data:
-              title: "Washing Machine Finished"
+              title: "{{ friendly_name }} Finished"
               message: >
-                {{ friendly_name }} has finished washing. It used 
-                {{ states(wash_last_energy_used_helper) }} kWh of energy.
+                {{ friendly_name }} has finished washing. It used
+                {{ states(wash_last_energy_used_helper, rounded=True, with_unit=True) }} of energy.
