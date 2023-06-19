@@ -1,8 +1,9 @@
 blueprint:
-  name: "[Blueprint] Dryer / Washing Machine Cycle Monitoring"
+  name: "[Blueprint] Dryer / Washing Machine Cycle Monitoring with Door Sensor"
   description: >
     This blueprint monitors a washing machine's power and energy usage, updates the status of the washing machine, and sends a notification when the washing cycle finishes.
     
+    It also monitors a door sensor to remind you to take out the laundry.
 
     Before using this blueprint, ensure you have set up two 'input_number' helpers, one 'notify' group, and one 'input_boolean' helper in your Home Assistant configuration. 
 
@@ -15,6 +16,7 @@ blueprint:
     
     4. Washing Machine Status: An 'input_boolean' helper to represent the status of the washing machine.
 
+    5. Laundry Taken Out Helper: An 'input_boolean' helper to represent if the laundry has been taken out. (Optional)
 
     Once you have created these helpers, input the following into the blueprint:
 
@@ -36,8 +38,13 @@ blueprint:
     
     9. Washing Machine Status: Select the 'input_boolean' helper you created to represent the status of the washing machine.
 
+    10. Door Sensor Entity: Select the door sensor entity that monitors the door of the washing machine. (Optional)
 
-    The automation will monitor the washing machine's power, update the 'input_number' helpers, and the status of the washing machine accordingly. At the end of each washing cycle, it will send a notification with the energy used in the last cycle.
+    The automation will monitor the washing machine's power, update the 'input_number' helpers,
+    and the status of the washing machine accordingly.
+    At the end of each washing cycle, it will send a notification with the energy used in the last cycle.
+    If a door sensor entity is specified, it will also monitor the door sensor and send a reminder notification 
+    if the laundry has not been taken out after a specified time delay.
 
   domain: automation
   input:
@@ -103,6 +110,38 @@ blueprint:
       selector:
         entity:
           domain: input_boolean
+    door_sensor_entity:
+      name: Door Sensor Entity
+      description: Binary sensor that monitors the door of the washing machine. (Optional)
+      default:
+      selector:
+        entity:
+          domain: binary_sensor
+    reminder_delay:
+      name: Reminder Delay
+      description: Time delay (in minutes) before the reminder notification is sent. (Optional)
+      default: 60
+      selector:
+        number:
+          min: 1
+          max: 180
+          step: 1
+          unit_of_measurement: 'min'
+    laundry_taken_out_helper:
+      name: Laundry Taken Out Helper
+      description: An input_boolean helper to represent if the laundry has been taken out. (Optional)
+      default:
+      selector:
+        entity:
+          domain: input_boolean
+
+variables:
+  friendly_name: !input 'friendly_name'
+  washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
+  wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
+  wash_start_energy_helper: !input 'wash_start_energy_helper'
+  door_sensor_entity: !input 'door_sensor_entity'
+  laundry_taken_out_helper: !input 'laundry_taken_out_helper'
 
 trigger:
   - platform: numeric_state
@@ -113,12 +152,12 @@ trigger:
     below: !input 'end_power_threshold'
     for:
       minutes: 2
-
-variables:
-  friendly_name: !input 'friendly_name'
-  washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
-  wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
-  wash_start_energy_helper: !input 'wash_start_energy_helper'
+  - platform: template
+    value_template: >
+      {{ (door_sensor_entity != '') and is_state('laundry_taken_out_helper', 'on') and
+         is_state('door_sensor_entity', 'off') }}
+    for:
+      minutes: "{{ reminder_delay | int }}"
 
 action:
   - choose:
@@ -160,3 +199,36 @@ action:
               message: >
                 {{ friendly_name }} has finished washing. It used
                 {{ states(wash_last_energy_used_helper) | round(2) }} {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") }} of energy.
+      - conditions:
+          - condition: state
+            entity_id: !input 'door_sensor_entity'
+            state: 'open'
+          - condition: state
+            entity_id: !input 'laundry_taken_out_helper'
+            state: 'on'
+        sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: !input 'laundry_taken_out_helper'
+      - conditions:
+          - condition: state
+            entity_id: !input 'laundry_taken_out_helper'
+            state: 'on'
+          - condition: state
+            entity_id: !input 'door_sensor_entity'
+            state: 'closed'
+        sequence:
+          - service: !input 'notification_service'
+            data:
+              title: "Reminder: Laundry is done!"
+              message: "It's been {{ states('reminder_delay') }} minutes. Laundry should be taken out."
+          - repeat:
+              until: "{{ is_state(door_sensor_entity, 'on') }}"
+              sequence:
+                - delay: "{{ reminder_delay | int }}:00:00"
+                - condition: template
+                  value_template: "{{ is_state(door_sensor_entity, 'off') and is_state('laundry_taken_out_helper', 'on') }}"
+                - service: !input 'notification_service'
+                  data:
+                    title: "Reminder: Laundry is done!"
+                    message: "It's been another {{ states('reminder_delay') }} minutes. Laundry should be taken out."
