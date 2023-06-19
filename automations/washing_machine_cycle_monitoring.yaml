@@ -108,4 +108,9 @@ action:
             target:
               entity_id: "{{ wash_last_energy_used_helper }}"
             data:
-              value: "{{ (states(washing_machine_energy_sensor) | float -
+              value: "{{ (states(washing_machine_energy_sensor) | float - states(wash_start_energy_helper) | float) }}"
+          - service: !input 'notification_service'
+            data:
+              message: >
+                "Washing Machine has finished washing. It used 
+                {{ states(wash_last_energy_used_helper) }} kWh of energy."
