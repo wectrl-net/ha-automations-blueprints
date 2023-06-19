@@ -159,4 +159,4 @@ action:
               title: "{{ friendly_name }} Finished"
               message: >
                 {{ friendly_name }} has finished washing. It used
-                {{ states(wash_last_energy_used_helper, rounded=True, with_unit=True) }} of energy.
+                {{ states(wash_last_energy_used_helper) | round(2) }} {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") }} of energy.
