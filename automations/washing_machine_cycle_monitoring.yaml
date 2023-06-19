@@ -113,7 +113,7 @@ blueprint:
     door_sensor_entity:
       name: Door Sensor Entity
       description: Binary sensor that monitors the door of the washing machine. (Optional)
-      default:
+      default: {}
       selector:
         entity:
           domain: binary_sensor
@@ -130,7 +130,7 @@ blueprint:
     laundry_taken_out_helper:
       name: Laundry Taken Out Helper
       description: An input_boolean helper to represent if the laundry has been taken out. (Optional)
-      default:
+      default: {}
       selector:
         entity:
           domain: input_boolean
@@ -154,7 +154,7 @@ trigger:
       minutes: 2
   - platform: template
     value_template: >
-      {{ (door_sensor_entity != '') and is_state('laundry_taken_out_helper', 'on') and
+      {{ door_sensor_entity|length > 0 and is_state('laundry_taken_out_helper', 'on' and
          is_state('door_sensor_entity', 'off') }}
     for:
       minutes: "{{ reminder_delay | int }}"
@@ -200,6 +200,8 @@ action:
                 {{ friendly_name }} has finished washing. It used
                 {{ states(wash_last_energy_used_helper) | round(2) }} {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") }} of energy.
       - conditions:
+          - condition: template
+            value_template: "{{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 }}"
           - condition: state
             entity_id: !input 'door_sensor_entity'
             state: 'open'
@@ -211,6 +213,8 @@ action:
             target:
               entity_id: !input 'laundry_taken_out_helper'
       - conditions:
+          - condition: template
+            value_template: "{{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 }}"
           - condition: state
             entity_id: !input 'laundry_taken_out_helper'
             state: 'on'
