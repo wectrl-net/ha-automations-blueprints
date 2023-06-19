@@ -57,7 +57,7 @@ blueprint:
       name: Notification Service
       description: The service used for notifications.
       selector:
-        entity:
+        service:
           domain: notify
     wash_start_energy_helper:
       name: Washing Start Energy Helper
