@@ -18,7 +18,9 @@ blueprint:
 
     5. Laundry Taken Out Helper: An 'input_boolean' helper to represent if the laundry has been taken out. (Optional)
 
+
     Once you have created these helpers, input the following into the blueprint:
+
 
     1. Device friendly name: The friendly name of the device to be used in the notifications of the automation.
 
@@ -204,27 +206,23 @@ action:
                 {{ friendly_name }} has finished washing. It used
                 {{ states(wash_last_energy_used_helper) | round(2) }} {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") }} of energy.
       - conditions:
+          # We need to use template condition because the door sensor and laundry taken out helper are optional
+          # Check if the door sensor is open and the laundry taken out helper is on if so turn off the laundry taken out helper
           - condition: template
-            value_template: "{{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 }}"
-          - condition: state
-            entity_id: !input 'door_sensor_entity'
-            state: 'open'
-          - condition: state
-            entity_id: !input 'laundry_taken_out_helper'
-            state: 'on'
+            value_template: >
+              {{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 and
+                 is_state('door_sensor_entity', 'open') and is_state('laundry_taken_out_helper', 'on') }}
         sequence:
           - service: input_boolean.turn_off
             target:
               entity_id: !input 'laundry_taken_out_helper'
       - conditions:
+          # We need to use template condition because the door sensor and laundry taken out helper are optional
+          # Check if the door if closed and the laundry taken out helper is on if so, send a reminder notification
           - condition: template
-            value_template: "{{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 }}"
-          - condition: state
-            entity_id: !input 'laundry_taken_out_helper'
-            state: 'on'
-          - condition: state
-            entity_id: !input 'door_sensor_entity'
-            state: 'closed'
+            value_template: >
+              {{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 and
+                 is_state('door_sensor_entity', 'closed') and is_state('laundry_taken_out_helper', 'on') }}
         sequence:
           - service: !input 'notification_service'
             data:
