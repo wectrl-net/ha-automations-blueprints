@@ -110,7 +110,7 @@ trigger:
 variables:
   washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
   wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
-
+  wash_start_energy_helper: !input 'wash_start_energy_helper'
 action:
   - choose:
       - conditions:
