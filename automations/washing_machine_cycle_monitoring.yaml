@@ -142,6 +142,9 @@ action:
           - condition: numeric_state
             entity_id: !input 'washing_machine_power_sensor'
             below: !input 'end_power_threshold'
+          - condition: state
+            entity_id: !input 'washing_machine_status'
+            state: "on"
         sequence:
           - service: input_number.set_value
             target:
