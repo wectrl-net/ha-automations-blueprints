@@ -115,7 +115,7 @@ blueprint:
     door_sensor_entity:
       name: Door Sensor Entity
       description: Binary sensor that monitors the door of the washing machine. (Optional)
-      default: # Optional
+      default: [] # Optional
       selector:
         entity:
           domain: binary_sensor
@@ -132,14 +132,10 @@ blueprint:
     laundry_taken_out_helper:
       name: Laundry Taken Out Helper
       description: An input_boolean helper to represent if the laundry has been taken out. (Optional)
-      default: # Optional
+      default: [] # Optional
       selector:
         entity:
           domain: input_boolean
-
-trigger_variables:
-  door_sensor_entity: !input door_sensor_entity               # Optional
-  laundry_taken_out_helper: !input laundry_taken_out_helper   # Optional
 
 variables:
   friendly_name: !input 'friendly_name'
@@ -204,37 +200,42 @@ action:
               title: "{{ friendly_name }} Finished"
               message: >
                 {{ friendly_name }} has finished washing. It used
-                {{ states(wash_last_energy_used_helper) | round(2) }} {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") }} of energy.
+                {{ states(wash_last_energy_used_helper) | round(2) }}
+                {{ state_attr(wash_last_energy_used_helper, "unit_of_measurement") | default("unavailable") }}
+                of energy.
       - conditions:
           # We need to use template condition because the door sensor and laundry taken out helper are optional
           # Check if the door sensor is open and the laundry taken out helper is on if so turn off the laundry taken out helper
           - condition: template
             value_template: >
-              {{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 and
-                 is_state('door_sensor_entity', 'open') and is_state('laundry_taken_out_helper', 'on') }}
+              {{ door_sensor_entity is string and door_sensor_entity is match "sensor." and
+                 laundry_taken_out_helper is string and laundry_taken_out_helper is match "input_boolean." and
+                 is_state('door_sensor_entity', 'open') | default("unavailable") and
+                 is_state('laundry_taken_out_helper', 'on') | default("unavailable") }}
         sequence:
           - service: input_boolean.turn_off
             target:
               entity_id: !input 'laundry_taken_out_helper'
-      # - conditions:
-      #     # We need to use template condition because the door sensor and laundry taken out helper are optional
-      #     # Check if the door if closed and the laundry taken out helper is on if so, send a reminder notification
-      #     - condition: template
-      #       value_template: >
-      #         {{ door_sensor_entity|length > 0 and door_sensor_entity|length > 0 and
-      #            is_state('door_sensor_entity', 'closed') and is_state('laundry_taken_out_helper', 'on') }}
-      #   sequence:
-      #     - service: !input 'notification_service'
-      #       data:
-      #         title: "Reminder: Laundry is done!"
-      #         message: "It's been {{ states('reminder_delay') }} minutes. Laundry should be taken out."
-      #     - repeat:
-      #         until: "{{ is_state(door_sensor_entity, 'on') }}"
-      #         sequence:
-      #           - delay: "{{ reminder_delay | int }}:00:00"
-      #           - condition: template
-      #             value_template: "{{ is_state(door_sensor_entity, 'off') and is_state('laundry_taken_out_helper', 'on') }}"
-      #           - service: !input 'notification_service'
-      #             data:
-      #               title: "Reminder: Laundry is done!"
-      #               message: "It's been another {{ states('reminder_delay') }} minutes. Laundry should be taken out."
+      - conditions:
+          # We need to use template condition because the door sensor and laundry taken out helper are optional
+          # Check if the door if closed and the laundry taken out helper is on if so, send a reminder notification
+          - condition: template
+            value_template: >
+              {{ door_sensor_entity is string and door_sensor_entity is match "sensor." and
+                 laundry_taken_out_helper is string and laundry_taken_out_helper is match "input_boolean." and
+                 is_state('door_sensor_entity', 'closed') and is_state('laundry_taken_out_helper', 'on') }}
+        sequence:
+          - service: !input 'notification_service'
+            data:
+              title: "Reminder: Laundry is done!"
+              message: "It's been {{ states('reminder_delay') }} minutes. Laundry should be taken out."
+          - repeat:
+              until: "{{ is_state(door_sensor_entity, 'on') }}"
+              sequence:
+                - delay: "{{ reminder_delay | int }}:00:00"
+                - condition: template
+                  value_template: "{{ is_state(door_sensor_entity, 'off') and is_state('laundry_taken_out_helper', 'on') }}"
+                - service: !input 'notification_service'
+                  data:
+                    title: "Reminder: Laundry is done!"
+                    message: "It's been another {{ states('reminder_delay') }} minutes. Laundry should be taken out."
