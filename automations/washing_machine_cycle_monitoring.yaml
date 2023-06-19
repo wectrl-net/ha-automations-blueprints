@@ -1,15 +1,20 @@
 blueprint:
   name: "[Blueprint] Washing Machine Cycle Monitoring"
   description: >
-    This blueprint monitors a washing machine's power and energy usage and sends a notification when the washing cycle finishes.
+    This blueprint monitors a washing machine's power and energy usage, updates the status of the washing machine, and sends a notification when the washing cycle finishes.
     
-    Before using this blueprint, make sure you have set up two 'input_number' helpers and one 'notify' group in your Home Assistant configuration. 
+
+    Before using this blueprint, ensure you have set up two 'input_number' helpers, one 'notify' group, and one 'input_boolean' helper in your Home Assistant configuration. 
+
 
     1. Washing Start Energy Helper: An 'input_number' helper to store the energy reading at the start of the washing cycle.
     2. Last Washing Energy Used Helper: Another 'input_number' helper to store the energy used in the last washing cycle.
     3. Notification Group: A 'notify' group in the helper section to specify where the notifications should be sent.
+    4. Washing Machine Status: An 'input_boolean' helper to represent the status of the washing machine.
+
 
     Once you have created these helpers, input the following into the blueprint:
+
 
     1. Washing Machine Power Sensor: The power sensor entity of your washing machine.
     2. Washing Machine Energy Sensor: The energy sensor entity of your washing machine.
@@ -18,8 +23,11 @@ blueprint:
     5. Notification Group: The 'notify' group you created for sending notifications.
     6. Washing Start Energy Helper: Select the 'input_number' helper you created to store the energy at the start of the washing cycle.
     7. Last Washing Energy Used Helper: Select the 'input_number' helper you created to store the energy used in the last washing cycle.
+    8. Washing Machine Status: Select the 'input_boolean' helper you created to represent the status of the washing machine.
 
-    The automation will monitor the washing machine's power and update the 'input_number' helpers accordingly. At the end of each washing cycle, it will send a notification with the energy used in the last cycle.
+
+    The automation will monitor the washing machine's power, update the 'input_number' helpers, and the status of the washing machine accordingly. At the end of each washing cycle, it will send a notification with the energy used in the last cycle.
+    
   domain: automation
   input:
     washing_machine_power_sensor:
@@ -59,7 +67,7 @@ blueprint:
       description: The notify group to which the notification should be sent.
       selector:
         entity:
-          domain: group
+          domain: notify
     wash_start_energy_helper:
       name: Washing Start Energy Helper
       description: An input_number helper to store the energy at the start of the washing cycle.
@@ -72,6 +80,12 @@ blueprint:
       selector:
         entity:
           domain: input_number
+    washing_machine_status:
+      name: Washing Machine Status
+      description: An input_boolean helper to represent the status of the washing machine.
+      selector:
+        entity:
+          domain: input_boolean
 
 trigger:
   - platform: numeric_state
@@ -85,7 +99,6 @@ trigger:
 
 variables:
   washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
-  wash_start_energy_helper: !input 'wash_start_energy_helper'
   wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
 
 action:
@@ -97,9 +110,12 @@ action:
         sequence:
           - service: input_number.set
             target:
-              entity_id: "{{ wash_start_energy_helper }}"
+              entity_id: !input 'wash_start_energy_helper'
             data:
               value: "{{ states(washing_machine_energy_sensor) }}"
+          - service: input_boolean.turn_on
+            target:
+              entity_id: !input 'washing_machine_status'
       - conditions:
           - condition: numeric_state
             entity_id: !input 'washing_machine_power_sensor'
@@ -107,7 +123,7 @@ action:
         sequence:
           - service: input_number.set
             target:
-              entity_id: "{{ wash_last_energy_used_helper }}"
+              entity_id: !input 'wash_last_energy_used_helper'
             data:
               value: "{{ (states(washing_machine_energy_sensor) | float - states(wash_start_energy_helper) | float) }}"
           - service: notify.notify
@@ -116,3 +132,6 @@ action:
                 "Washing Machine has finished washing. It used 
                 {{ states(wash_last_energy_used_helper) }} kWh of energy."
               target: !input 'notification_group'
+          - service: input_boolean.turn_off
+            target:
+              entity_id: !input 'washing_machine_status'
