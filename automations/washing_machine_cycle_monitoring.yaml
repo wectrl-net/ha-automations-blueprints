@@ -113,7 +113,7 @@ blueprint:
     door_sensor_entity:
       name: Door Sensor Entity
       description: Binary sensor that monitors the door of the washing machine. (Optional)
-      default: {}
+      default: # Optional
       selector:
         entity:
           domain: binary_sensor
@@ -130,18 +130,22 @@ blueprint:
     laundry_taken_out_helper:
       name: Laundry Taken Out Helper
       description: An input_boolean helper to represent if the laundry has been taken out. (Optional)
-      default: {}
+      default: # Optional
       selector:
         entity:
           domain: input_boolean
+
+trigger_variables:
+  door_sensor_entity: !input door_sensor_entity               # Optional
+  laundry_taken_out_helper: !input laundry_taken_out_helper   # Optional
 
 variables:
   friendly_name: !input 'friendly_name'
   washing_machine_energy_sensor: !input 'washing_machine_energy_sensor'
   wash_last_energy_used_helper: !input 'wash_last_energy_used_helper'
   wash_start_energy_helper: !input 'wash_start_energy_helper'
-  door_sensor_entity: !input 'door_sensor_entity'
-  laundry_taken_out_helper: !input 'laundry_taken_out_helper'
+  door_sensor_entity: !input 'door_sensor_entity'             # Optional
+  laundry_taken_out_helper: !input 'laundry_taken_out_helper' # Optional
 
 trigger:
   - platform: numeric_state
