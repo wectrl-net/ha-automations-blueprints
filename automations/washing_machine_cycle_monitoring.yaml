@@ -157,7 +157,7 @@ trigger:
   - platform: template
     value_template: >
       {{ door_sensor_entity is string and door_sensor_entity is match "binary_sensor." and
-        (not is_state(door_sensor_entity, "open") and is_state(laundry_taken_out_helper, "on") }}
+         not is_state(door_sensor_entity, "open") and is_state(laundry_taken_out_helper, "on") }}
     for:
       minutes: '{{ reminder_delay | int }}'
 
