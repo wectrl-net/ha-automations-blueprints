@@ -156,7 +156,7 @@ trigger:
       minutes: 2
   - platform: template
     value_template: >
-      {{ {{ door_sensor_entity is string and door_sensor_entity is match "sensor." and
+      {{ door_sensor_entity is string and door_sensor_entity is match "sensor." and
          is_state(door_sensor_entity, "closed") and is_state(laundry_taken_out_helper, "on") }}
     for:
       minutes: '{{ reminder_delay | int }}'
