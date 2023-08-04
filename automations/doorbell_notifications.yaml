@@ -68,22 +68,23 @@ action:
             value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
         sequence:
           - parallel:
-              - service: timer.start
-                entity_id: !input timer_entity
-                data:
-                  duration: "00:00:30"
+            - service: timer.start
+              entity_id: !input timer_entity
+              data:
+                duration: "00:00:30"
+            - sequence:
               - alias: "Run the Custom Notification actions"
                 choose: []
                 default: !input notification_action
-              - service: notify.notify
+            - service: notify.notify
+              data:
+                message: Someone is at the front door!
+                title: Front Door Ringing
                 data:
-                  message: Someone is at the front door!
-                  title: Front Door Ringing
-                  data:
-                    entity_id: !input camera_entity
-                    actions:
-                      - action: !input unlock_action_name
-                        title: Unlock Door
-                        icon: "sfsymbols:lock_open_fill"
-                        authenticationRequired: true
+                  entity_id: !input camera_entity
+                  actions:
+                    - action: !input unlock_action_name
+                      title: Unlock Door
+                      icon: "sfsymbols:lock_open_fill"
+                      authenticationRequired: true
 mode: single
