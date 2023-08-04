@@ -34,6 +34,7 @@ blueprint:
     notification_action:
       name: Notification Action
       description: Action to run when the bell is rung
+      default: [] # Optional
       selector:
         action: {}
 
