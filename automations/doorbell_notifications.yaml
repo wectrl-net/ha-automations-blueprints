@@ -86,6 +86,6 @@ action:
                   actions:
                     - action: !input unlock_action_name
                       title: Unlock Door
-                      icon: "sfsymbols:lock_open_fill"
+                      icon: "sfsymbols:lock.open.fill"
                       authenticationRequired: true
 mode: single
