@@ -1,0 +1,51 @@
+blueprint:
+  name: "[Blueprint] Set Grid Energy Tariff"
+  description: Sets the Grid Energy mode to either peak or offpeak based on the specified times.
+  domain: automation
+  input:
+    grid_selector:
+      name: Grid Selector
+      selector:
+        entity:
+          domain: select
+    peak_start_time:
+      name: Peak Start Time
+      default: "06:00:00"
+      selector:
+        time: {}
+    offpeak_start_time:
+      name: Offpeak Start Time
+      default: "22:00:00"
+      selector:
+        time: {}
+
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at:
+      - !input peak_start_time
+      - !input offpeak_start_time
+
+action:
+  - choose:
+      - conditions:
+          - condition: time
+            after: !input peak_start_time
+            before: !input offpeak_start_time
+        sequence:
+          - service: select.select_option
+            target:
+              entity_id: !input grid_selector
+            data:
+              option: "peak"
+      - conditions:
+          - condition: time
+            after: !input offpeak_start_time
+            before: !input peak_start_time
+        sequence:
+          - service: select.select_option
+            target:
+              entity_id: !input grid_selector
+            data:
+              option: "offpeak"
