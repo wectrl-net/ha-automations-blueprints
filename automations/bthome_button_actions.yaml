@@ -1,0 +1,75 @@
+blueprint:
+  name: "[Blueprint] BTHome Button Actions"
+  description: |
+    Harness the power of your BTHome with enhanced event-driven control.
+    Configure actions for various click types, from single to long presses.
+    This blueprint allows for fine-tuning responses to each button event,
+    providing flexibility for a tailored smart home experience.
+  domain: automation
+  input:
+    remote:
+      name: Switch
+      description: Button to use
+      selector:
+        device:
+          integration: bthome
+    single_press:
+      name: Single click
+      default: []
+      selector:
+        action: {}
+    double_press:
+      name: Double click
+      default: []
+      selector:
+        action: {}
+    triple_press:
+      name: Triple click
+      default: []
+      selector:
+        action: {}
+    long_press:
+      name: Long Single Click
+      default: []
+      selector:
+        action: {}
+    long_double_press:
+      name: Long Double Click
+      default: []
+      selector:
+        action: {}
+    long_double_press:
+      name: Long Triple Click
+      default: []
+      selector:
+        action: {}
+mode: restart
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: bthome_ble_event
+  event_data:
+    device_id: !input remote
+    event_class: button
+action:
+- variables:
+    event: '{{ trigger.event.data.event_type }}'
+- choose:
+  - conditions:
+    - '{{ event == "press" }}'
+    sequence: !input single_press
+  - conditions:
+    - '{{ event == "double_press" }}'
+    sequence: !input double_press
+  - conditions:
+    - '{{ event == "triple_press" }}'
+    sequence: !input triple_press
+  - conditions:
+    - '{{ event == "long_press" }}'
+    sequence: !input long_press
+  - conditions:
+    - '{{ event == "long_double_press" }}'
+    sequence: !input long_double_press
+  - conditions:
+    - '{{ event == "long_triple_press" }}'
+    sequence: !input long_triple_press
