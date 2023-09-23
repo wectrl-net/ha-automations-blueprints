@@ -38,7 +38,7 @@ blueprint:
       default: []
       selector:
         action: {}
-    long_double_press:
+    long_triple_press:
       name: Long Triple Click
       default: []
       selector:
