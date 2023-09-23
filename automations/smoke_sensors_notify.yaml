@@ -1,0 +1,48 @@
+blueprint:
+  name: "[Blueprint] Smoke Detectors Alarm"
+  description: When any smoke detector detects smoke, a critical push notification is sent to the specified notify device.
+  domain: automation
+  input:
+    title:
+      name: Notification Title
+      description: Notification Title
+      default: Smoke Detected!
+      selector:
+        text:
+
+    message_text:
+      name: Notification Message
+      description: >
+        Text Message. This message will be added 
+          to the name of the sensor [sensor name] [text message].
+      default: ' has detected Smoke!'
+      selector:
+        text:
+
+trigger:
+# Trigger from all smoke sensors
+  - platform: event
+    event_type: state_changed
+
+condition:
+  - >
+    {{  trigger.event.data.new_state is not none and
+        trigger.event.data.new_state.domain == 'binary_sensor' and
+        trigger.event.data.new_state.attributes.device_class | default('') == 'smoke' and
+        trigger.event.data.new_state.state == 'on' }}
+
+variables:
+  message_var: !input message_text
+
+action:
+  - service: notify.notify
+    data:
+      title: !input title
+      message: '{{trigger.to_state.name}} {{message_var}}'
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
+mode: single
