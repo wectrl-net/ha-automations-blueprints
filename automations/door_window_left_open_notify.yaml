@@ -111,6 +111,7 @@ blueprint:
             - critical
 
 variables:
+  entity: !input entity
   friendly_name: !input friendly_name
   notification_icon_warning: !input notification_icon_warning
   issue_state: !input issue_state
@@ -138,10 +139,12 @@ action:
         interruption-level: !input interruption_level
 
 # Wait for door/window to close in order to inform user
-- wait_for_trigger:
-    - platform: state
-      entity_id: !input entity
-      to: "{{ 'off' if issue_state == 'on' else 'on' }}"
+- alias: "Wait for door/window to close in order to inform user"
+  wait_template: >
+    {% set state = states(entity) %}
+    {% set desired_state = 'off' if issue_state == 'on' else 'on' %}
+    {{ true if state == desired_state else false }}
+
 - service: !input notify_service
   data:
     message: "The {{ friendly_name }} has been closed."
