@@ -31,6 +31,65 @@ blueprint:
       selector:
         entity:
           domain: timer
+    click_url:
+      name: Click URL
+      description: Where the user will be taken if they tap the notification. (ie. /lovelace/kitchen)
+      default: "/lovelace/ROOM"
+      selector:
+        text:
+    title:
+      name: Notification Title
+      description: The title of the notification. 
+      default: "Front Door Ringing"
+      selector:
+        text:
+    message:
+      name: Notification Message
+      description: The message of the notification.
+      default: "Someone is at the front door!"
+      selector:
+        text:
+    notification_icon_warning:
+      name: Notification Icon (Android Only)
+      description: The icon that is shown when the issue is reported. (ie. mdi:fridge-alert)
+      default: "alert"
+      selector:
+        select:
+          options:
+            - alert
+            - alert-circle
+            - door
+            - door-open
+            - motion-sensor
+            - fridge
+            - fridge-alert
+            - home
+            - home-alert
+            - home-assistant
+    notification_color:
+      name: Notification Color (Android Only)
+      description: The color of the notification.
+      default: "red"
+      selector:
+        select:
+          options:
+            - "red"
+            - "orange"
+            - "yellow"
+            - "green"
+            - "blue"
+            - "purple"
+    interruption_level:
+      name: Interruption Level (iOS Only)
+      description: The intrusiveness of the notification recieved. This also determines whether the notification will be delivered while the device is in a focus mode.
+      default: "active"
+      selector:
+        select:
+          options:
+            - passive
+            - active
+            - time-sensitive
+            - critical
     notification_action:
       name: Notification Action
       description: Action to run when the bell is rung
@@ -40,6 +99,7 @@ blueprint:
 
 variables:
   unlock_action_name: !input unlock_action_name
+  notification_icon_warning: !input notification_icon_warning
 
 trigger:
   - platform: state
@@ -79,10 +139,16 @@ action:
                 default: !input notification_action
             - service: notify.notify
               data:
-                message: Someone is at the front door!
-                title: Front Door Ringing
+                message: !input message
+                title: !input title
                 data:
                   entity_id: !input camera_entity
+                  clickAction: !input click_url
+                  url: !input click_url
+                  color: !input notification_color
+                  notification_icon: 'mdi:{{ notification_icon_warning }}'
+                  push:
+                    interruption-level: !input interruption_level
                   actions:
                     - action: !input unlock_action_name
                       title: Unlock Door
