@@ -109,6 +109,7 @@ blueprint:
             - active
             - time-sensitive
             - critical
+
 variables:
   friendly_name: !input friendly_name
   notification_icon_warning: !input notification_icon_warning
@@ -136,14 +137,15 @@ action:
       push:
         interruption-level: !input interruption_level
 
+# Wait for door/window to close in order to inform user
 - wait_for_trigger:
-    platform: state
-    entity_id: !input entity
-    to: "{{ 'off' if issue_state == 'on' else 'on' }}"
+    - platform: state
+      entity_id: !input entity
+      to: "{{ 'off' if issue_state == 'on' else 'on' }}"
 - service: !input notify_service
   data:
-    message: "The {{friendly_name}} has been closed."
-    title: "{{friendly_name}} is closed."
+    message: "The {{ friendly_name }} has been closed."
+    title: "{{ friendly_name }} is closed."
     data:
       clickAction: !input click_url
       url: !input click_url
