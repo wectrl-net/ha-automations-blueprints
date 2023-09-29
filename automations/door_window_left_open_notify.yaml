@@ -134,3 +134,20 @@ action:
       notification_icon: 'mdi:{{ notification_icon_warning }}'
       push:
         interruption-level: !input interruption_level
+
+- wait_for_trigger:
+    platform: state
+    entity_id: !input entity
+    to: "{{ 'off' if issue_state == 'on' else 'on' }}"
+- service: !input notify_service
+  data:
+    message: "The {{friendly_name}} has been closed."
+    title: "{{friendly_name}} is closed."
+    data:
+      clickAction: !input click_url
+      url: !input click_url
+      tag: !input entity
+      color: !input notification_color
+      notification_icon: 'mdi:{{ notification_icon_warning }}'
+      push:
+        interruption-level: !input interruption_level
