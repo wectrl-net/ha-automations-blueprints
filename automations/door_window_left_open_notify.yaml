@@ -111,8 +111,6 @@ blueprint:
             - critical
 variables:
   friendly_name: !input friendly_name
-  entity: !input entity
-  click_url: !input click_url
   notification_icon_warning: !input notification_icon_warning
 
 trigger:
