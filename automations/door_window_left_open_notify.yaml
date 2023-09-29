@@ -112,6 +112,7 @@ blueprint:
 variables:
   friendly_name: !input friendly_name
   notification_icon_warning: !input notification_icon_warning
+  issue_state: !input issue_state
 
 trigger:
   platform: state
