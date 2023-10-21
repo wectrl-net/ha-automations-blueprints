@@ -1,0 +1,47 @@
+blueprint:
+  name: Notify On State Change
+  description: Sends a notification when the state of a specified sensor changes.
+  domain: automation
+  source_url: !placeholder <Your Source URL if applicable>
+  input:
+    target_sensor:
+      name: Sensor
+      description: Select the sensor you want to monitor for state changes.
+      selector:
+        entity:
+          domain: sensor
+    notify_service:
+      name: Notification Service
+      description: Select the notification service you want to use.
+      default: notify.notify
+      selector:
+        entity:
+          domain: notify
+    notification_text:
+      name: Notification Text
+      description: Customize the message text for the notification.
+      default: "The {{ trigger.to_state.name }} changed to {{ trigger.to_state.state }}!"
+      selector:
+        text:
+    notification_title:
+      name: Notification Title
+      description: Customize the title text for the notification.
+      default: "State change"
+      selector:
+        text:
+
+trigger:
+  - platform: state
+    entity_id: !input 'target_sensor'
+
+condition:
+  - condition: template
+    value_template: "{{ trigger.from_state != trigger.to_state }}"
+
+action:
+  - service: !input 'notify_service'
+    data:
+      title: !input 'notification_title'
+      message: !input 'notification_text'
+
+mode: single
