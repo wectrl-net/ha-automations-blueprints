@@ -43,14 +43,21 @@ blueprint:
       default: []
       selector:
         action: {}
+
 mode: restart
 max_exceeded: silent
+
 trigger:
 - platform: event
   event_type: bthome_ble_event
   event_data:
     device_id: !input remote
     event_class: button
+
+condition:
+  - condition: template
+    value_template: "{{ trigger.from_state != trigger.to_state }}"
+
 action:
 - variables:
     event: '{{ trigger.event.data.event_type }}'
