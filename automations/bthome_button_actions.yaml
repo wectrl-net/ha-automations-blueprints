@@ -44,7 +44,7 @@ blueprint:
       selector:
         action: {}
 
-mode: restart
+mode: single
 max_exceeded: silent
 
 trigger:
@@ -53,11 +53,6 @@ trigger:
   event_data:
     device_id: !input remote
     event_class: button
-
-condition:
-  - condition: template
-    value_template: "{{ trigger.from_state != trigger.to_state }}"
-
 action:
 - variables:
     event: '{{ trigger.event.data.event_type }}'
@@ -80,3 +75,6 @@ action:
   - conditions:
     - '{{ event == "long_triple_press" }}'
     sequence: !input long_triple_press
+  
+  # Adding delay to prevent duplicate triggers
+  - delay: 1
