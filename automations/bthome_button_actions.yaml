@@ -48,33 +48,34 @@ mode: single
 max_exceeded: silent
 
 trigger:
-- platform: event
-  event_type: bthome_ble_event
-  event_data:
-    device_id: !input remote
-    event_class: button
+  - platform: event
+    event_type: bthome_ble_event
+    event_data:
+      device_id: !input remote
+      event_class: button
+
 action:
-- variables:
-    event: '{{ trigger.event.data.event_type }}'
-- choose:
-  - conditions:
-    - '{{ event == "press" }}'
-    sequence: !input single_press
-  - conditions:
-    - '{{ event == "double_press" }}'
-    sequence: !input double_press
-  - conditions:
-    - '{{ event == "triple_press" }}'
-    sequence: !input triple_press
-  - conditions:
-    - '{{ event == "long_press" }}'
-    sequence: !input long_press
-  - conditions:
-    - '{{ event == "long_double_press" }}'
-    sequence: !input long_double_press
-  - conditions:
-    - '{{ event == "long_triple_press" }}'
-    sequence: !input long_triple_press
-  
+  - variables:
+      event: '{{ trigger.event.data.event_type }}'
+  - choose:
+    - conditions:
+      - '{{ event == "press" }}'
+      sequence: !input single_press
+    - conditions:
+      - '{{ event == "double_press" }}'
+      sequence: !input double_press
+    - conditions:
+      - '{{ event == "triple_press" }}'
+      sequence: !input triple_press
+    - conditions:
+      - '{{ event == "long_press" }}'
+      sequence: !input long_press
+    - conditions:
+      - '{{ event == "long_double_press" }}'
+      sequence: !input long_double_press
+    - conditions:
+      - '{{ event == "long_triple_press" }}'
+      sequence: !input long_triple_press
+    
   # Adding delay to prevent duplicate triggers
   - delay: 1
