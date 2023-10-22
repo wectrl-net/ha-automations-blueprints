@@ -9,14 +9,15 @@ blueprint:
       description: Select the sensor you want to monitor for state changes.
       selector:
         entity:
-          domain: sensor
+          domain: 
+            - sensor
+            - binary_sensor
     notify_service:
       name: Notification Service
       description: Select the notification service you want to use.
       default: notify.notify
       selector:
-        entity:
-          domain: notify
+        text:
     notification_text:
       name: Notification Text
       description: Customize the message text for the notification.
