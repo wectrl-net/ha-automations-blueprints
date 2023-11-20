@@ -154,4 +154,4 @@ action:
                       title: Unlock Door
                       icon: "sfsymbols:lock.open.fill"
                       authenticationRequired: true
-mode: single
+mode: parallel
