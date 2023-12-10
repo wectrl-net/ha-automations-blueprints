@@ -36,22 +36,6 @@ blueprint:
           min: 0
           max: 3600
           unit_of_measurement: seconds
-    sun_entity:
-      name: Sun entity
-      description: This is normally "sun.sun".
-      default: sun.sun
-      selector:
-        entity:
-          filter:
-            domain: sun
-    home_entity:
-      name: Home entity
-      description: This is typically "zone.home".
-      default: zone.home
-      selector:
-        entity:
-          filter:
-            domain: zone
 
 # If motion is detected within the delay,
 # we restart the script.
