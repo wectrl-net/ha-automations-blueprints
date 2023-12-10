@@ -24,8 +24,6 @@ blueprint:
 
       - `filter_chat_id`: Store the message ONLY IF it is received from this chat_id. Leave empty to avoid filtering.
 
-  domain: script
-
   input:
     input_text_entity:
       name: Input_text entity
