@@ -6,6 +6,8 @@ blueprint:
     This blueprint allows for fine-tuning responses to each button event,
     providing flexibility for a tailored smart home experience.
   domain: automation
+  source_url: https://wectrl.io
+  author: wectrl.io
   input:
     remote:
       name: Switch

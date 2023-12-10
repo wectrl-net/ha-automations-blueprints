@@ -2,6 +2,8 @@ blueprint:
   name: "[Blueprint] Set Grid Energy Tariff"
   description: Sets the Grid Energy mode to either peak or offpeak based on the specified times.
   domain: automation
+  source_url: https://wectrl.io
+  author: wectrl.io
   input:
     grid_selector:
       name: Grid Selector
