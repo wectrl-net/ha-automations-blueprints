@@ -1,0 +1,68 @@
+blueprint:
+  name: "[Blueprint] Conditional Media Player Control"
+  description: Mutes a media player if it is on, performs an action, and then checks the volume state after a set duration. If still muted, turns off the media player.
+  domain: automation
+  input:
+    media_player_entity:
+      name: Media Player
+      description: The media player to control.
+      selector:
+        entity:
+          domain: media_player
+    action_to_perform:
+      name: Action to Perform
+      description: The action to be performed after muting.
+      default: []
+      selector:
+        action: {}
+    wait_duration:
+      name: Wait Duration
+      description: Time to wait before checking the volume state.
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: minutes
+          mode: slider
+    trigger_input:
+      name: Trigger
+      description: Define the trigger for this automation.
+      selector:
+        trigger: {}
+
+variables:
+  media_player: !input media_player_entity
+  wait_time: !input wait_duration
+
+trigger: !input trigger_input
+
+condition:
+  - condition: state
+    entity_id: !input media_player_entity
+    state: 'on'
+
+action:
+  - service: media_player.volume_mute
+    target:
+      entity_id: !input media_player_entity
+    data:
+      is_volume_muted: true
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ action_to_perform != [] }}"
+        sequence: !input action_to_perform
+  - delay:
+      minutes: !input wait_duration
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input media_player_entity
+            attribute: is_volume_muted
+            state: 'false'
+        sequence: []
+    default:
+      - service: media_player.turn_off
+        target:
+          entity_id: !input media_player_entity
