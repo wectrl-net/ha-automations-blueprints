@@ -40,6 +40,8 @@ blueprint:
 variables:
   media_player: !input media_player_entity
   wait_time: !input wait_duration
+  action_to_perform: !input action_to_perform
+  preconclusion_action_to_perform: !input preconclusion_action_to_perform
 
 trigger: !input trigger_input
 
@@ -68,8 +70,8 @@ action:
       - choose:
           - conditions:
               - condition: template
-                value_template: "{{ action_to_perform != [] }}"
-            sequence: !input action_to_perform
+                value_template: "{{ preconclusion_action_to_perform != [] }}"
+            sequence: !input preconclusion_action_to_perform
       - service: media_player.turn_off
         target:
           entity_id: !input media_player_entity
