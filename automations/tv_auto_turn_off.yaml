@@ -15,6 +15,12 @@ blueprint:
       default: []
       selector:
         action: {}
+    preconclusion_action_to_perform:
+      name: Action to Perform before conclusion
+      description: The action to be performed after muting and time has passed and before powering the TV off.
+      default: []
+      selector:
+        action: {}
     wait_duration:
       name: Wait Duration
       description: Time to wait before checking the volume state.
@@ -55,14 +61,15 @@ action:
         sequence: !input action_to_perform
   - delay:
       minutes: !input wait_duration
-  - choose:
-      - conditions:
-          - condition: state
-            entity_id: !input media_player_entity
-            attribute: is_volume_muted
-            state: 'false'
-        sequence: []
-    default:
+  - if:
+      - condition: template
+        value_template: "{{ state_attr(media_player, 'is_volume_muted') }}"
+    then:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ action_to_perform != [] }}"
+            sequence: !input action_to_perform
       - service: media_player.turn_off
         target:
           entity_id: !input media_player_entity
