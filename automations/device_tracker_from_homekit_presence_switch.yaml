@@ -1,0 +1,33 @@
+blueprint:
+  name: "[Blueprint] Device Tracker from HomeKit Presence Switch"
+  description: Updates device tracker location based on the state of a specified HomeKit presence switch.
+  domain: automation
+  source_url: https://wectrl.io
+  author: wectrl.io
+  input:
+    presence_switch:
+      name: Presence Switch Entity
+      description: The input_boolean entity that tracks the HomeKit presence state.
+      selector:
+        entity:
+          domain: input_boolean
+    device_tracker_id:
+      name: Device Tracker ID
+      description: The ID for the device tracker to update.
+      selector:
+        text:
+
+trigger:
+  - platform: state
+    entity_id: !input presence_switch
+action:
+  - service: device_tracker.see
+    data:
+      dev_id: !input device_tracker_id
+      location_name: >
+        {% if trigger.to_state.state == "on" %}
+          home
+        {% else %}
+          not_home
+        {% endif %}
+mode: single
