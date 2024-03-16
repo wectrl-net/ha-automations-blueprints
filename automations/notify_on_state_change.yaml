@@ -21,7 +21,7 @@ blueprint:
     notification_text:
       name: Notification Text
       description: Customize the message text for the notification.
-      default: "The {{ trigger.to_state.name }} changed to {{ trigger.to_state.state }}!"
+      default: "The {{ trigger.to_state.name }} changed to {{ state_translated(state.to_state.entity_id) }}!"
       selector:
         text:
     notification_title:
