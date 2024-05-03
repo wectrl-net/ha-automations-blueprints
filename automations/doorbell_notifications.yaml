@@ -8,9 +8,24 @@ blueprint:
     doorbell_entity:
       name: Doorbell entity
       description: The entity that triggers when the doorbell is rung
+      default: []
       selector:
         entity:
           domain: binary_sensor
+    triggers:
+      name: Additional / Custom triggers
+      description: The triggers that make the doorbell ring
+      default:
+        - platform: state
+          entity_id: !input doorbell_entity
+          from: 'off'
+          to: 'on'
+        - platform: event
+          event_type: mobile_app_notification_action
+          event_data:
+            action: !input unlock_action_name
+      selector:
+        trigger:
     unlock_action_name:
       name: Unlock action name
       description: The action name used to unlock the door
@@ -103,15 +118,7 @@ variables:
   unlock_action_name: !input unlock_action_name
   notification_icon_warning: !input notification_icon_warning
 
-trigger:
-  - platform: state
-    entity_id: !input doorbell_entity
-    from: 'off'
-    to: 'on'
-  - platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: !input unlock_action_name
+trigger: !input triggers
 
 condition: []
 
