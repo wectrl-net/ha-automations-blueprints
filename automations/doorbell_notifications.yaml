@@ -5,13 +5,6 @@ blueprint:
   source_url: https://wectrl.io
   author: wectrl.io
   input:
-    doorbell_entity:
-      name: Doorbell entity
-      description: The entity that triggers when the doorbell is rung
-      default: []
-      selector:
-        entity:
-          domain: binary_sensor
     triggers:
       name: Additional / Custom triggers
       description: The triggers that make the doorbell ring
@@ -23,7 +16,7 @@ blueprint:
         - platform: event
           event_type: mobile_app_notification_action
           event_data:
-            action: !input unlock_action_name
+            action: UNLOCK_DOOR
       selector:
         trigger:
     unlock_action_name:
@@ -33,6 +26,7 @@ blueprint:
     lock_entity:
       name: Door lock entity
       description: The entity for the lock that will be unlocked
+      default: []
       selector:
         entity:
           domain: lock
@@ -117,6 +111,7 @@ blueprint:
 variables:
   unlock_action_name: !input unlock_action_name
   notification_icon_warning: !input notification_icon_warning
+  lock_entity: !input lock_entity
 
 trigger: !input triggers
 
@@ -126,7 +121,7 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name }}"
+            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name and lock_entity }}"
         sequence:
           - service: lock.unlock
             entity_id: !input lock_entity
