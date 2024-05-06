@@ -9,10 +9,6 @@ blueprint:
       name: Additional / Custom triggers
       description: The triggers that make the doorbell ring
       default:
-        - platform: state
-          entity_id: !input doorbell_entity
-          from: 'off'
-          to: 'on'
         - platform: event
           event_type: mobile_app_notification_action
           event_data:
