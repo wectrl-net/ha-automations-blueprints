@@ -114,20 +114,18 @@ trigger: !input triggers
 condition: []
 
 action:
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name and lock_entity }}"
-        sequence:
-          - service: lock.unlock
-            entity_id: !input lock_entity
-      - conditions:
+  - if:
+      - condition: template
+        value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name and lock_entity }}"
+    then:
+      - service: lock.unlock
+        entity_id: !input lock_entity
+    else:
+      - if:
           - condition: state
             entity_id: !input timer_entity
             state: 'idle'
-          - condition: template
-            value_template: "{{ trigger.platform == 'state' and trigger.to_state.state == 'on' }}"
-        sequence:
+        then:
           - parallel:
             - service: timer.start
               entity_id: !input timer_entity
