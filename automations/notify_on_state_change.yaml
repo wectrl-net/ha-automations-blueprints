@@ -49,7 +49,7 @@ condition:
     value_template: "{{ trigger.from_state != trigger.to_state }}"
   - condition: template
     value_template: >
-      {% if not (exclude_unknown_unavailable_boolcfg) %}
+      {% if not (is_defined(exclude_unknown_unavailable_boolcfg) and exclude_unknown_unavailable_boolcfg) %}
         true
       {% else %}
         {{ trigger.from_state.state not in ['unknown', 'unavailable'] }}
