@@ -3,8 +3,8 @@ blueprint:
   name: "[Blueprint] Motion-activated Light (With condition selector that can be set by user at automation build.)"
   description: Turn on a light when motion is detected.
   domain: automation
-  source_url: https://wectrl.io
-  author: wectrl.io
+  source_url: https://wectrl.net
+  author: wectrl.net
   input:
     motion_entity:
       name: Motion Sensor

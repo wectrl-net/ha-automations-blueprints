@@ -2,8 +2,8 @@ blueprint:
   name: "[Blueprint] Device Tracker from HomeKit Presence Switch"
   description: Updates device tracker location based on the state of a specified HomeKit presence switch.
   domain: automation
-  source_url: https://wectrl.io
-  author: wectrl.io
+  source_url: https://wectrl.net
+  author: wectrl.net
   input:
     presence_switch:
       name: Presence Switch Entity

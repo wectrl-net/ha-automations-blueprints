@@ -3,8 +3,8 @@ blueprint:
   description: >-
     A script that allows you to set actions for events fired by HomeKit TV Remote
   domain: automation
-  source_url: https://wectrl.io
-  author: wectrl.io
+  source_url: https://wectrl.net
+  author: wectrl.net
   input:
     input_entity:
       name: TV Entity

@@ -2,7 +2,7 @@ blueprint:
   name: "[Blueprint] Notify On State Change"
   description: Sends a notification when the state of a specified sensor changes.
   domain: automation
-  source_url: https://wectrl.io
+  source_url: https://wectrl.net
   input:
     target_sensor:
       name: Sensor

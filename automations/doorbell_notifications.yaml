@@ -2,8 +2,8 @@ blueprint:
   name: "[Blueprint] Doorbell Ring and Unlock Action with Cooldown"
   description: Sends a notification when the doorbell is rung and handles an unlock action. It includes a cooldown to prevent spamming of notifications.
   domain: automation
-  source_url: https://wectrl.io
-  author: wectrl.io
+  source_url: https://wectrl.net
+  author: wectrl.net
   input:
     triggers:
       name: Additional / Custom triggers
