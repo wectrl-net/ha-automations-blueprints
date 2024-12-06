@@ -30,6 +30,12 @@ blueprint:
       default: "State change"
       selector:
         text:
+    exclude_unknown_unavailable:
+      name: Exclude Unknown/Unavailable States
+      description: Whether to exclude state changes to or from 'unknown' and 'unavailable'.
+      default: true
+      selector:
+        boolean:
 
 trigger:
   - platform: state
@@ -38,6 +44,13 @@ trigger:
 condition:
   - condition: template
     value_template: "{{ trigger.from_state != trigger.to_state }}"
+  - condition: template
+    value_template: >
+      {% if not (is_defined(input.exclude_unknown_unavailable) and input.exclude_unknown_unavailable) %}
+        true
+      {% else %}
+        {{ trigger.from_state.state not in ['unknown', 'unavailable'] }}
+      {% endif %}
 
 action:
   - service: !input 'notify_service'
