@@ -41,12 +41,15 @@ trigger:
   - platform: state
     entity_id: !input 'target_sensor'
 
+variables:
+    exclude_unknown_unavailable_boolcfg: input.exclude_unknown_unavailable
+
 condition:
   - condition: template
     value_template: "{{ trigger.from_state != trigger.to_state }}"
   - condition: template
     value_template: >
-      {% if not (is_defined(input.exclude_unknown_unavailable) and input.exclude_unknown_unavailable) %}
+      {% if not (exclude_unknown_unavailable_boolcfg) %}
         true
       {% else %}
         {{ trigger.from_state.state not in ['unknown', 'unavailable'] }}
