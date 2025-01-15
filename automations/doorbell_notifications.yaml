@@ -103,6 +103,12 @@ blueprint:
       default: [] # Optional
       selector:
         action: {}
+    notification_service:
+      name: Notification Service
+      description: The notification service to use (e.g., notify.mobile_app_phone, notify.notify)
+      selector:
+        text:
+      default: notify.notify
 
 variables:
   unlock_action_name: !input unlock_action_name
@@ -116,7 +122,7 @@ condition: []
 action:
   - if:
       - condition: template
-        value_template: "{{ trigger.platform == 'event' and trigger.event.data.action == unlock_action_name and lock_entity }}"
+        value_template: "{{ trigger.event.data.action == unlock_action_name and lock_entity }}"
     then:
       - service: lock.unlock
         entity_id: !input lock_entity
@@ -135,7 +141,7 @@ action:
               - alias: "Run the Custom Notification actions"
                 choose: []
                 default: !input notification_action
-            - service: notify.notify
+            - service: !input notification_service
               data:
                 message: !input message
                 title: !input title
