@@ -1,0 +1,103 @@
+blueprint:
+  name: Turn off device after a certain time with little power draw
+  description: This is a blueprint to turn off a smart plug after the power draw has been low for a certain time. It is useful for devices that draw significant power in standby, like PCs or Water Heaters.
+  domain: automation
+  source_url: https://github.com/wectrl-io/ha-automations-blueprints
+  input:
+    power_sensor:
+      name: Electric Power Sensor
+      description: This sensor used to identify when the target device has been shut off.
+      selector:
+        entity:
+          domain: sensor
+          device_class: power
+    power_threshold:
+      name: Power Threshold in Watts
+      description: When the device is not used is should draw less power than the power threshold so that the automation kicks in when that action of the device has finished.
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 1000
+          unit_of_measurement: W
+          mode: slider
+          step: 1
+    target_switch:
+      name: Target Smart Plug
+      description: This switch will be turned off once the threshold is reached for the configured amount of minutes.
+      selector:
+        entity:
+          domain: switch
+    off_delay:
+      name: Wait time
+      description: Time the switch power usage needs to be below the threshold before turning off
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: minutes
+          mode: slider
+          step: 1
+    notify_on_off:
+      name: Send notification when turned off
+      description: Send a notification when the device is turned off
+      default: false
+      selector:
+        boolean:
+    notification_service:
+      name: Notification Service
+      description: The notification service to use (only needed if notifications are enabled)
+      default: notify.notify
+      selector:
+        text:
+      required: false
+    notification_title:
+      name: Notification Title
+      description: Title of the notification when device is turned off
+      default: "Device turned off"
+      selector:
+        text:
+      required: false
+    notification_message:
+      name: Notification Message
+      description: Message of the notification when device is turned off. You can use {{device_name}} as a placeholder for the switch name.
+      default: "{{device_name}} was turned off due to low power consumption"
+      selector:
+        text:
+      required: false
+
+variables:
+  device_name: "{{ states[trigger.entity_id].name }}"
+  notification_title: !input notification_title
+  notification_message: >
+    {{ input_notification_message | replace("{{device_name}}", device_name) }}
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input power_sensor
+    below: !input power_threshold
+    for: 
+      minutes: !input off_delay
+
+condition:
+  - condition: state
+    entity_id: !input target_switch
+    state: "on"
+
+action:
+  - service: switch.turn_off
+    target:
+      entity_id: !input target_switch
+    metadata:
+      description: "Turn off device due to low power consumption"
+  - if:
+      - condition: template
+        value_template: !input notify_on_off
+    then:
+      - service: !input notification_service
+        data:
+          title: "{{ notification_title }}"
+          message: "{{ notification_message }}"
+
+mode: single
