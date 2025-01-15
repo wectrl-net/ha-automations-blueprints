@@ -51,21 +51,18 @@ blueprint:
       default: notify.notify
       selector:
         text:
-      required: false
     notification_title:
       name: Notification Title
       description: Title of the notification when device is turned off
       default: "Device turned off"
       selector:
         text:
-      required: false
     notification_message:
       name: Notification Message
       description: Message of the notification when device is turned off. You can use {{device_name}} as a placeholder for the switch name.
       default: "{{device_name}} was turned off due to low power consumption"
       selector:
         text:
-      required: false
 
 variables:
   device_name: "{{ states[trigger.entity_id].name }}"
