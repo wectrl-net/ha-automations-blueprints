@@ -67,8 +67,9 @@ blueprint:
 variables:
   device_name: "{{ states[trigger.entity_id].name }}"
   notification_title: !input notification_title
+  input_message: !input notification_message
   notification_message: >
-    {{ input_notification_message | replace("{{device_name}}", device_name) }}
+    {{ input_message | replace("{{device_name}}", device_name) }}
 
 trigger:
   - platform: numeric_state
