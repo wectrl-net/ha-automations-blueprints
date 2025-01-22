@@ -1,6 +1,6 @@
 blueprint:
   name: Turn off device after a certain time with little power draw
-  description: This is a blueprint to turn off a smart plug after the power draw has been low for a certain time. It is useful for devices that draw significant power in standby, like PCs or Water Heaters.
+  description: This is a blueprint to turn off a target switch after the power draw has been low for a certain time. It is useful for devices that draw significant power in standby, like PCs or Water Heaters.
   domain: automation
   source_url: https://github.com/wectrl-io/ha-automations-blueprints
   input:
@@ -23,7 +23,7 @@ blueprint:
           mode: slider
           step: 1
     target_switch:
-      name: Target Smart Plug
+      name: Target Switch
       description: This switch will be turned off once the threshold is reached for the configured amount of minutes.
       selector:
         entity:
@@ -65,7 +65,7 @@ blueprint:
         text:
 
 variables:
-  device_name: "{{ states[trigger.entity_id].name }}"
+  device_name: "{{ states[input.target_switch].name }}"
   notification_title: !input notification_title
   input_message: !input notification_message
   notification_message: >
