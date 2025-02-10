@@ -65,7 +65,8 @@ blueprint:
         text:
 
 variables:
-  device_name: "{{ states[input.target_switch].name }}"
+  target_switch: !input target_switch
+  device_name: "{{ states[target_switch].name }}"
   notification_title: !input notification_title
   input_message: !input notification_message
   notification_message: >
