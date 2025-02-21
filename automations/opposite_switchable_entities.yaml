@@ -1,0 +1,72 @@
+blueprint:
+  name: Ensure Two Groups of Entities Stay Opposite
+  description: >
+    This blueprint ensures that two groups of entities (automations, switches, lights, etc.) never stay ON simultaneously.
+    When an entity in one group turns ON, all entities in the other group are turned OFF.
+    
+    This is useful for scenarios such as:
+      - Preventing two opposing automations from running together.
+      - Ensuring only one mode (e.g., heating vs. cooling) is active.
+      - Switching between power sources, scenes, or operational states.
+
+  domain: automation
+
+  input:
+    group_1:
+      name: First Group of Entities
+      description: >
+        Select the first group of entities (can be automations, switches, lights, or a group).
+        If any entity in this group turns ON, all entities in the second group will be turned OFF.
+      selector:
+        entity:
+          multiple: true
+          domain:
+            - automation
+            - switch
+            - light
+            - group
+
+    group_2:
+      name: Second Group of Entities
+      description: >
+        Select the second group of entities (can be automations, switches, lights, or a group).
+        If any entity in this group turns ON, all entities in the first group will be turned OFF.
+      selector:
+        entity:
+          multiple: true
+          domain:
+            - automation
+            - switch
+            - light
+            - group
+
+mode: restart
+
+trigger:
+  - platform: state
+    entity_id: !input group_1
+    to: "on"
+  - platform: state
+    entity_id: !input group_2
+    to: "on"
+
+action:
+  - variables:
+      triggered_entity: "{{ trigger.entity_id }}"
+  
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ triggered_entity in (expand(input.group_1) | map(attribute='entity_id') | list) }}"
+        sequence:
+          - service: homeassistant.turn_off
+            target:
+              entity_id: !input group_2
+
+      - conditions:
+          - condition: template
+            value_template: "{{ triggered_entity in (expand(input.group_2) | map(attribute='entity_id') | list) }}"
+        sequence:
+          - service: homeassistant.turn_off
+            target:
+              entity_id: !input group_1
